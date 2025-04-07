@@ -1,5 +1,4 @@
 # Repo specific
-tests/
 multiqc_data/
 
 # Byte-compiled / optimized / DLL files
@@ -133,3 +132,6 @@ dmypy.json
 .pyre/
 
 .idea
+/quantms.db
+/results_mq/
+.qodo

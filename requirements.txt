@@ -1,7 +1,9 @@
-multiqc==1.19.0
-pandas
+multiqc==1.26
+pandas<=2.0.3
 pyteomics
 pyopenms
-sdrf-pipelines >= 0.0.18
+sdrf-pipelines>=0.0.31
 lxml
-numpy
+numpy==1.24.3
+pyarrow
+scikit-learn==1.5.0
