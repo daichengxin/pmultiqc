@@ -1,12 +1,20 @@
 {
     "projects": [
         {
-            "accession": "lfq",
+            "accession": "LFQ_PXD007683",
             "urls": [
-                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/lfq/lfq.zip"
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/LFQ_PXD007683.zip"
             ],
-            "path": "docs/lfq",
-            "file_type": "lfq"
+            "path": "docs/LFQ_PXD007683",
+            "file_type": ["lfq", ""]
+        },
+        {
+            "accession": "LFQ_PXD007683_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/LFQ_PXD007683.zip"
+            ],
+            "path": "docs/LFQ_PXD007683_disable_hoverinfo",
+            "file_type": ["lfq", "disable_hoverinfo"]
         },
         {
             "accession": "dia",
@@ -14,15 +22,47 @@
                 "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/dia/dia.zip"
             ],
             "path": "docs/dia",
-            "file_type": "dia"
+            "file_type": ["dia", ""]
         },
         {
-            "accession": "tmt",
+            "accession": "dia_disable_hoverinfo",
             "urls": [
-                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/tmt-replicates/tmt-replicates.zip"
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/dia/dia.zip"
             ],
-            "path": "docs/tmt",
-            "file_type": "tmt"
+            "path": "docs/dia_disable_hoverinfo",
+            "file_type": ["dia", "disable_hoverinfo"]
+        },
+        {
+            "accession": "DIANN",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD063291.zip"
+            ],
+            "path": "docs/DIANN",
+            "file_type": ["diann", ""]
+        },
+        {
+            "accession": "DIANN_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD063291.zip"
+            ],
+            "path": "docs/DIANN_disable_hoverinfo",
+            "file_type": ["diann", "disable_hoverinfo"]
+        },
+        {
+            "accession": "TMT_PXD007683",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/TMT_PXD007683.zip"
+            ],
+            "path": "docs/TMT_PXD007683",
+            "file_type": ["tmt", ""]
+        },
+        {
+            "accession": "TMT_PXD007683_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/TMT_PXD007683.zip"
+            ],
+            "path": "docs/TMT_PXD007683_disable_hoverinfo",
+            "file_type": ["tmt", "disable_hoverinfo"]
         },
         {
             "accession": "PXD003133",
@@ -30,7 +70,47 @@
                 "https://ftp.pride.ebi.ac.uk/pride/data/archive/2015/11/PXD003133/txt_20min.zip"
             ],
             "path": "docs/PXD003133",
-            "file_type": "maxquant"
+            "file_type": ["maxquant", ""]
+        },
+        {
+            "accession": "PXD003133_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2015/11/PXD003133/txt_20min.zip"
+            ],
+            "path": "docs/PXD003133_disable_hoverinfo",
+            "file_type": ["maxquant", "disable_hoverinfo"]
+        },
+        {
+            "accession": "MaxDIA",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/maxquant/MaxDIA_txt.zip"
+            ],
+            "path": "docs/MaxDIA",
+            "file_type": ["maxquant", ""]
+        },
+        {
+            "accession": "MaxDIA_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/maxquant/MaxDIA_txt.zip"
+            ],
+            "path": "docs/MaxDIA_disable_hoverinfo",
+            "file_type": ["maxquant", "disable_hoverinfo"]
+        },
+        {
+            "accession": "ProteoBench",
+            "urls": [
+                "https://proteobench.cubimed.rub.de/datasets/d01e87b997b84c985868204b1ed26749902fd7f9/d01e87b997b84c985868204b1ed26749902fd7f9_data.zip"
+            ],
+            "path": "docs/ProteoBench",
+            "file_type": ["proteobench", ""]
+        },
+        {
+            "accession": "ProteoBench_disable_hoverinfo",
+            "urls": [
+                "https://proteobench.cubimed.rub.de/datasets/d01e87b997b84c985868204b1ed26749902fd7f9/d01e87b997b84c985868204b1ed26749902fd7f9_data.zip"
+            ],
+            "path": "docs/ProteoBench_disable_hoverinfo",
+            "file_type": ["proteobench", "disable_hoverinfo"]
         },
         {
             "accession": "PXD054720",
@@ -43,16 +123,126 @@
                 "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001236.mzid.gz"
             ],
             "path": "docs/PXD054720",
-            "file_type": "mzid"
+            "file_type": ["mzid", ""]
         },
         {
-            "accession": "PXD051187",
+            "accession": "PXD054720_disable_hoverinfo",
             "urls": [
-                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/10/PXD051187/33060_Control_vs_Infection_JMI.mzML",
-                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/10/PXD051187/33060_Control_vs_Infection_JMI.mzid.gz"
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001234.mgf",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001234.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001235.mgf",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001235.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001236.mgf",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001236.mzid.gz"
             ],
-            "path": "docs/PXD051187",
-            "file_type": "mzid"
+            "path": "docs/PXD054720_disable_hoverinfo",
+            "file_type": ["mzid", "disable_hoverinfo"]
+        },
+        {
+            "accession": "PXD053068",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzid.gz"
+            ],
+            "path": "docs/PXD053068",
+            "file_type": ["mzid", ""]
+        },
+        {
+            "accession": "PXD053068_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzid.gz",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzML",
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzid.gz"
+            ],
+            "path": "docs/PXD053068_disable_hoverinfo",
+            "file_type": ["mzid", "disable_hoverinfo"]
+        },
+        {
+            "accession": "PXD062399",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062399.zip"
+            ],
+            "path": "docs/PXD062399",
+            "file_type": ["fragpipe", ""]
+        },
+        {
+            "accession": "PXD062399_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062399.zip"
+            ],
+            "path": "docs/PXD062399_disable_hoverinfo",
+            "file_type": ["fragpipe", "disable_hoverinfo"]
+        },
+        {
+            "accession": "PXD062383",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062383.zip"
+            ],
+            "path": "docs/PXD062383",
+            "file_type": ["dia", ""]
+        },
+        {
+            "accession": "PXD062383_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062383.zip"
+            ],
+            "path": "docs/PXD062383_disable_hoverinfo",
+            "file_type": ["dia", "disable_hoverinfo"]
+        },
+        {
+            "accession": "PXD053464",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD053464/03_SingleCell_Searches.zip"
+            ],
+            "path": "docs/PXD053464",
+            "file_type": ["diann", ""]
+        },
+        {
+            "accession": "PXD053464_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD053464/03_SingleCell_Searches.zip"
+            ],
+            "path": "docs/PXD053464_disable_hoverinfo",
+            "file_type": ["diann", "disable_hoverinfo"]
+        },
+        {
+            "accession": "mhcquant",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/mhcquant/mhcquant_3-1-0_results.zip"
+            ],
+            "path": "docs/mhcquant",
+            "file_type": ["mhcquant", ""]
+        },
+        {
+            "accession": "mhcquant_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/mhcquant/mhcquant_3-1-0_results.zip"
+            ],
+            "path": "docs/mhcquant_disable_hoverinfo",
+            "file_type": ["mhcquant", "disable_hoverinfo"]
+        },
+        {
+            "accession": "qpx",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/qpx_example.zip"
+            ],
+            "path": "docs/qpx",
+            "file_type": ["qpx", ""]
+        },
+        {
+            "accession": "qpx_disable_hoverinfo",
+            "urls": [
+                "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/qpx_example.zip"
+            ],
+            "path": "docs/qpx_disable_hoverinfo",
+            "file_type": ["qpx", "disable_hoverinfo"]
         }
     ]
 }

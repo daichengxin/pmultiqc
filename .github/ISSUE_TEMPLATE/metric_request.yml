@@ -1,0 +1,111 @@
+name: Metric Request
+description: Request implementation of a new proteomics quality control metric
+title: "[METRIC] "
+labels: ["metric-request", "enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for requesting a new metric! We actively encourage metric requests as they help improve proteomics quality control.
+
+  - type: textarea
+    id: metric_name
+    attributes:
+      label: Metric Name
+      description: What is the name of the metric you want implemented?
+      placeholder: e.g., "Peptide Identification Rate", "Mass Accuracy Score"
+    validations:
+      required: true
+
+  - type: textarea
+    id: metric_description
+    attributes:
+      label: Metric Description
+      description: What does this metric measure? What does it tell us about data quality?
+      placeholder: |
+        - What does this metric measure?
+        - What does it indicate about data quality?
+        - Why is this metric important for proteomics analysis?
+    validations:
+      required: true
+
+  - type: textarea
+    id: calculation_method
+    attributes:
+      label: Calculation Method
+      description: How is this metric calculated? Provide formulas, algorithms, or step-by-step process.
+      placeholder: |
+        - Formula: [mathematical formula if applicable]
+        - Algorithm: [step-by-step calculation process]
+        - Input data: [what data is needed]
+        - Output: [what the metric produces]
+    validations:
+      required: true
+
+  - type: input
+    id: reference_manuscript
+    attributes:
+      label: Reference Manuscript
+      description: Please provide a reference to a manuscript or publication describing this metric.
+      placeholder: "e.g., DOI: 10.1000/example, PMID: 12345678, or full citation"
+  - type: textarea
+    id: expected_values
+    attributes:
+      label: Expected Values
+      description: What are the expected values or ranges for this metric?
+      placeholder: |
+        - Range: [e.g., 0-1, 0-100%, specific units]
+        - Good values: [what indicates good quality]
+        - Poor values: [what indicates poor quality]
+    validations:
+      required: true
+
+  - type: textarea
+    id: visualization_preference
+    attributes:
+      label: Visualization Preference
+      description: How would you like this metric to be visualized?
+      placeholder: |
+        - Plot type: [histogram, scatter plot, heatmap, box plot, etc.]
+        - X-axis: [what should be on the x-axis]
+        - Y-axis: [what should be on the y-axis]
+        - Interactive elements: [zoom, hover, filtering, etc.]
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Use Cases
+      description: When and why would researchers use this metric?
+      placeholder: |
+        - Research scenarios: [when this metric is most useful]
+        - Quality control: [how it helps with QC]
+        - Troubleshooting: [how it helps identify problems]
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this metric to your research?
+      options:
+        - Low - Nice to have
+        - Medium - Would be helpful
+        - High - Important for my research
+        - Critical - Essential for my analysis
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other context, information, or details about this metric request.
+      placeholder: Add any other relevant information...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
