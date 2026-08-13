@@ -52,7 +52,7 @@ jobs:
         run: |
           wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/LFQ_PXD007683.zip
           unzip -d ./lfq LFQ_PXD007683.zip
-          multiqc ./lfq --config ./lfq/LFQ_PXD007683/multiqc_config.yml -o ./results_lfq
+          multiqc --quantms-plugin ./lfq --config ./lfq/multiqc_config.yml -o ./results_lfq
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
@@ -75,7 +75,7 @@ jobs:
         run: |
           wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/TMT_PXD007683.zip
           unzip -d ./tmt TMT_PXD007683.zip
-          multiqc ./tmt --config ./tmt/TMT_PXD007683/multiqc_config.yml -o ./results_tmt
+          multiqc --quantms-plugin ./tmt --config ./tmt/multiqc_config.yml -o ./results_tmt
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
@@ -94,17 +94,40 @@ jobs:
           python-version: "3.10"
       - name: Install package
         run: pip install .
-      - name: Test DIA dataset
+      - name: Test quantms DIA dataset
         run: |
           wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/dia/dia.zip
           unzip -d ./dia dia.zip
-          multiqc ./dia --config  ./dia/multiqc_config.yml -o ./results_dia
+          multiqc --quantms-plugin ./dia --config ./dia/multiqc_config.yml -o ./results_dia
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
         with:
           name: results_dia
           path: ./results_dia
+
+  test_diann:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test DIANN dataset
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD063291.zip
+          unzip PXD063291.zip
+          multiqc --diann-plugin ./PXD063291 -o ./results_diann
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_diann
+          path: ./results_diann
 
   test_mzid_mzML:
     needs: setup
@@ -120,10 +143,18 @@ jobs:
       - name: Test mzid & mzML file
         run: |
           mkdir -p ~/mzid_mzML
-          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/10/PXD051187/33060_Control_vs_Infection_JMI.mzML
-          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/10/PXD051187/33060_Control_vs_Infection_JMI.mzid.gz
-          gunzip ~/mzid_mzML/33060_Control_vs_Infection_JMI.mzid.gz
-          multiqc --mzid_plugin ~/mzid_mzML -o ./results_mzid_mzML
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzML
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/F10854.mzid.gz
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzML
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Q00745.mzid.gz
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzML
+          wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/cGAS.mzid.gz
+          # wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Insulin-1.mzML
+          # wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/insulin-1.mzid.gz
+          # wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/Insulin-2.mzML
+          # wget -nv -P ~/mzid_mzML https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/05/PXD053068/insulin-2.mzid.gz
+          gunzip ~/mzid_mzML/*.mzid.gz
+          multiqc --mzid-plugin ~/mzid_mzML -o ./results_mzid_mzML
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
@@ -150,7 +181,7 @@ jobs:
           wget -nv -P ~/mzid_mgf https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001234.mzid.gz
           wget -nv -P ~/mzid_mgf https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD054720/F001235.mzid.gz
           gunzip ~/mzid_mgf/*mzid.gz
-          multiqc --mzid_plugin ~/mzid_mgf -o ./results_mzid_mgf
+          multiqc --mzid-plugin ~/mzid_mgf -o ./results_mzid_mgf
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
@@ -173,10 +204,174 @@ jobs:
         run: |
           wget -nv https://ftp.pride.ebi.ac.uk/pride/data/archive/2015/11/PXD003133/txt_20min.zip
           unzip -d ./maxquant txt_20min.zip
-          multiqc --parse_maxquant ./maxquant -o ./results_maxquant
+          multiqc --maxquant-plugin ./maxquant -o ./results_maxquant
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload results
         with:
           name: results_maxquant
           path: ./results_maxquant
+
+  test_maxquant_dia:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python "3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test MaxQuant DIA file
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/maxquant/MaxDIA_txt.zip
+          mkdir -p ./maxdia
+          unzip -d ./maxdia MaxDIA_txt.zip
+          multiqc --maxquant-plugin ./maxdia -o ./results_maxquant_dia
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_maxquant_dia
+          path: ./results_maxquant_dia
+
+  test_proteobench:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python "3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test ProteoBench file
+        run: |
+          wget -nv --no-check-certificate https://proteobench.cubimed.rub.de/datasets/d01e87b997b84c985868204b1ed26749902fd7f9/d01e87b997b84c985868204b1ed26749902fd7f9_data.zip
+          unzip -d ./proteobench d01e87b997b84c985868204b1ed26749902fd7f9_data.zip
+          multiqc --proteobench-plugin ./proteobench -o ./results_proteobench
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_proteobench
+          path: ./results_proteobench
+
+
+  test_fragpipe:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python "3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test FragPipe file
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062399.zip
+          mkdir -p ./fragpipe
+          unzip -d ./fragpipe PXD062399.zip
+          multiqc --fragpipe-plugin ./fragpipe -o ./results_fragpipe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_fragpipe
+          path: ./results_fragpipe
+
+  test_mhcquant:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python "3.10"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test mhcquant file
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/mhcquant/mhcquant_3-1-0_results.zip
+          unzip mhcquant_3-1-0_results.zip
+          multiqc --mhcquant-plugin ./megatest_results -o ./results_mhcquant
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_mhcquant
+          path: ./results_mhcquant
+
+  test_big_dia:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test big quantms DIA dataset
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD062383.zip
+          unzip -d ./PXD062383 PXD062383.zip
+          multiqc --quantms-plugin ./PXD062383 --config  ./PXD062383/multiqc_config.yml -o ./results_big_dia
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_big_dia
+          path: ./results_big_dia
+
+  test_single_cell_diann:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test single cell dataset
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pride/data/archive/2024/08/PXD053464/03_SingleCell_Searches.zip
+          unzip -d ./PXD053464 03_SingleCell_Searches.zip
+          multiqc --diann-plugin ./PXD053464 -o ./results_single_cell_diann
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_single_cell_diann
+          path: ./results_single_cell_diann
+
+  test_qpx:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install package
+        run: pip install .
+      - name: Test qpx dataset
+        run: |
+          wget -nv https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/qpx_example.zip
+          unzip -d ./qpx_example qpx_example.zip
+          multiqc --qpx-plugin ./qpx_example --config ./qpx_example/results/multiqc_config.yml -o ./results_qpx
+      - uses: actions/upload-artifact@v4
+        if: always()
+        name: Upload results
+        with:
+          name: results_qpx
+          path: ./results_qpx

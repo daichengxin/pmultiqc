@@ -1,7 +1,17 @@
-# pmultiqc
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bigbio/pmultiqc/main/docs/images/pmultiqc_logo_darkbg.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/bigbio/pmultiqc/main/docs/images/pmultiqc_logo.svg">
+    <img src="https://raw.githubusercontent.com/bigbio/pmultiqc/main/docs/images/pmultiqc_logo.svg" width="45%" alt="pmultiqc Logo"/>
+  </picture>
+</p>
 
 [![Python application](https://github.com/bigbio/pmultiqc/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/bigbio/pmultiqc/actions/workflows/python-app.yml)
 [![Upload Python Package](https://github.com/bigbio/pmultiqc/actions/workflows/python-publish.yml/badge.svg)](https://github.com/bigbio/pmultiqc/actions/workflows/python-publish.yml)
+![PyPI - Version](https://img.shields.io/pypi/v/pmultiqc?style=flat)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pmultiqc)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/pmultiqc)
+![GitHub Repo stars](https://img.shields.io/github/stars/bigbio/pmultiqc)
 
 ## What is pmultiqc?
 
@@ -27,7 +37,7 @@ pmultiqc supports the following data sources:
    - `*ms_info.tsv`: MS quality control information
    - `*.idXML`: Identification results
    - `*.yml`: Pipeline parameters (optional)
-   - `diann_report.tsv`: DIA-NN main report (DIA analysis only)
+   - `diann_report.tsv` or `diann_report.parquet`: DIA-NN main report (DIA analysis only)
 
 2. **[MaxQuant](https://www.maxquant.org)** result files:
    - `parameters.txt`: Analysis parameters
@@ -36,21 +46,65 @@ pmultiqc supports the following data sources:
    - `evidence.txt`: Peptide evidence
    - `msms.txt`: MS/MS scan information
    - `msmsScans.txt`: MS/MS scan details
+   - `*sdrf.tsv`: SDRF-Proteomics (optional)
 
-3. **mzIdentML** files:
+3. **[DIA-NN](https://aptila.bio)** result files:
+   - `report.tsv` or `report.parquet`: DIA-NN main report
+   - `report.log.txt` or `diannsummary.log`: DIA-NN log
+   - `*sdrf.tsv`: SDRF-Proteomics (optional)
+   - `*ms_info.parquet`: mzML statistics after RAW-to-mzML conversion (using **[quantms-utils](https://github.com/bigbio/quantms-utils)**) (optional)
+
+4. **[ProteoBench](https://proteobench.readthedocs.io)** file:
+   - `result_performance.csv`: ProteoBench result file
+
+5. **mzIdentML** files:
    - `*.mzid`: Identification results
    - `*.mzML` or `*.mgf`: Corresponding spectra files
 
+6. **[FragPipe](https://fragpipe.nesvilab.org)** main report files:
+   - `psm.tsv`: FDR-filtered PSMs
+   - `ion.tsv`: FDR-filtered ions
+   - `combined_ion.tsv`: FDR-filtered ions
+   - `combined_peptide.tsv`: FDR-filtered peptides
+   - `combined_protein.tsv`: FDR-filtered proteins
+
+7. **[nf-core/mhcquant](https://nf-co.re/mhcquant)** result files:
+   - `mhcquant/results-*`: folder containing mhcquant results
+
+8. **[QPX](https://github.com/bigbio/qpx)** files:
+   - `*.psm.parquet`: QPX PSMs
+   - `*.pg.parquet`: QPX PG
+   - `*.feature.parquet`: QPX feature
+   - `*sdrf.tsv`: SDRF-Proteomics (optional)
+
 ## Installation
 
-```bash
-# Install from PyPI
-pip install pmultiqc
+### Install from PyPI
 
-# Or install from source
-git clone https://github.com/bigbio/pmultiqc
+```bash
+# To install the stable release from PyPI:
+pip install pmultiqc
+```
+
+### Install with uv
+
+```bash
+uv tool install multiqc --with pmultiqc
+```
+
+### Install from Source (Without PyPI)
+
+```bash
+# Fork the repository on GitHub
+
+# Clone the repository
+git clone https://github.com/your-username/pmultiqc.git
 cd pmultiqc
-pip install -e .
+
+# Install the package locally
+pip install .
+
+# Now you can run pmultiqc on your own dataset
 ```
 
 ## Usage
@@ -73,40 +127,77 @@ Where:
 
 ```bash
 # Basic usage
-multiqc /path/to/quantms/results -o ./report
+multiqc --quantms-plugin /path/to/quantms/results -o ./report
 
 # With specific options
-multiqc /path/to/quantms/results -o ./report --remove_decoy --condition factor
+multiqc --quantms-plugin /path/to/quantms/results -o ./report --remove-decoy --condition factor
 ```
 
 #### For MaxQuant results
 
 ```bash
-multiqc --parse_maxquant /path/to/maxquant/results -o ./report
+multiqc --maxquant-plugin /path/to/maxquant/results -o ./report
+```
+
+#### For DIA-NN results
+
+```bash
+multiqc --diann-plugin /path/to/diann/results -o ./report
+```
+
+#### For ProteoBench files
+
+```bash
+multiqc --proteobench-plugin /path/to/proteobench/files -o ./report
 ```
 
 #### For mzIdentML files
 
 ```bash
-multiqc --mzid_plugin /path/to/mzid/files -o ./report
+multiqc --mzid-plugin /path/to/mzid/files -o ./report
+```
+
+#### For FragPipe files
+
+```bash
+multiqc --fragpipe-plugin /path/to/fragpipe/files -o ./report
+```
+
+#### For mhcquant files
+
+```bash
+multiqc --mhcquant-plugin /path/to/mhcquant/files -o ./report
+```
+
+#### For qpx files
+
+```bash
+multiqc --qpx-plugin /path/to/qpx/files -o ./report
 ```
 
 ### Command-line Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--raw` | Keep filenames in experimental design output as raw | `False` |
+| `--keep-raw` | Keep filenames in experimental design output as raw | `False` |
 | `--condition` | Create conditions from provided columns | - |
-| `--remove_decoy` | Remove decoy peptides when counting | `True` |
-| `--decoy_affix` | Pre- or suffix of decoy proteins in their accession | `DECOY_` |
-| `--contaminant_affix` | The contaminant prefix or suffix | `CONT` |
-| `--affix_type` | Location of the decoy marker (prefix or suffix) | `prefix` |
-| `--disable_plugin` | Disable pmultiqc plugin | `False` |
-| `--quantification_method` | Quantification method for LFQ experiment | `feature_intensity` |
-| `--disable_table` | Disable protein/peptide table plots for large datasets | `False` |
-| `--ignored_idxml` | Ignore idXML files for faster processing | `False` |
-| `--parse_maxquant` | Generate reports based on MaxQuant results | `False` |
-| `--mzid_plugin` | Generate reports based on mzIdentML files | `False` |
+| `--remove-decoy` | Remove decoy peptides when counting | `True` |
+| `--decoy-affix` | Pre- or suffix of decoy proteins in their accession | `DECOY_` |
+| `--contaminant-affix` | The contaminant prefix or suffix | `CONT` |
+| `--affix-type` | Location of the decoy marker (prefix or suffix) | `prefix` |
+| `--disable-plugin` | Disable pmultiqc plugin | `False` |
+| `--quantification-method` | Quantification method for LFQ experiment | `feature_intensity` |
+| `--disable-table` | Disable protein/peptide table plots for large datasets | `False` |
+| `--ignored-idxml` | Ignore idXML files for faster processing | `False` |
+| `--quantms-plugin` | Generate reports based on Quantms results | `False` |
+| `--diann-plugin` | Generate reports based on DIANN results | `False` |
+| `--maxquant-plugin` | Generate reports based on MaxQuant results | `False` |
+| `--proteobench-plugin` | Generate reports based on ProteoBench result | `False` |
+| `--mzid-plugin` | Generate reports based on mzIdentML files | `False` |
+| `--fragpipe-plugin` | Generate reports based on FragPipe files | `False` |
+| `--mhcquant-plugin` | Generate reports based on mhcquant files | `False` |
+| `--qpx-plugin` | Generate reports based on qpx files | `False` |
+| `--disable-hoverinfo` | Disable interactive hover tooltips in the plots | `False` |
 
 ## QC Metrics and Visualizations
 
@@ -148,9 +239,21 @@ pmultiqc generates a comprehensive report with multiple sections:
 
 You can find example reports on the [docs page](https://bigbio.github.io/pmultiqc).
 
-## Development
+## Reporting Issues
 
-To contribute to pmultiqc:
+We have comprehensive issue templates to help you report problems effectively:
+
+- **Bug Reports**: For crashes, incorrect metrics, or unexpected behavior
+- **Metric Requests**: For new proteomics quality control metrics (we actively encourage these!)
+- **Feature Requests**: For new visualizations, data format support, or functionality
+- **Service Issues**: For problems with the PRIDE web service
+- **General Issues**: For questions, suggestions, or issues that don't fit other categories
+
+## Contributing
+
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for detailed instructions.
+
+### Quick Start for Contributors
 
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/pmultiqc`
@@ -166,10 +269,12 @@ To contribute to pmultiqc:
 
 This project is licensed under the terms of the LICENSE file included in the repository.
 
-## Citation
+## How to cite
 
-If you use pmultiqc in your research, please cite:
+If you use **bigbio/pmultiqc** for your analysis, please cite it using the following citation:
 
-```
-pmultiqc: A MultiQC plugin for proteomics quality control
-https://github.com/bigbio/pmultiqc
+> **pmultiqc: An open-source, lightweight, and metadata-oriented QC reporting library for MS proteomics.**
+>
+> Yue QX, Dai C, Kamatchinathan S, Bandla C, Webel H, Larrea A, Bittremieux W, Uszkoreit J, Müller TD, Xiao J, Cox J, Yu F, Ewels P, Demichev V, Kohlbacher O, Sachsenberg T, Bielow C, Bai M, Perez-Riverol Y.
+> 
+> *Mol Cell Proteomics*. 2026 Feb 17:101530. doi: [10.1016/j.mcpro.2026.101530](https://doi.org/10.1016/j.mcpro.2026.101530). Epub ahead of print. PMID: 41713790.

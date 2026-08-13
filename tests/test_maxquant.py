@@ -1,10 +1,12 @@
+import gzip
 import logging
 import os
-import gzip
-import pytest
-import pandas as pd
+
 import numpy as np
-from pmultiqc.modules.quantms.maxquant import get_parameters
+import pandas as pd
+import pytest
+
+from pmultiqc.modules.maxquant.maxquant_utils import get_parameters
 
 
 class TestMaxquant:
@@ -107,11 +109,11 @@ class TestMaxquant:
         with gzip.open(parameters_file, "rt") as f:
             parameters = get_parameters(f)
 
-        # Check that the dataframe is not empty
-        assert parameters, "parameters.txt is not empty"
+        # Check that the parameters dict is not empty
+        assert parameters, "parameters.txt is empty"
 
         # Check for expected columns
-        for param_key, param_value in parameters["parameters_tb_dict"].values():
+        for param_key, param_value in parameters["parameters_tb_dict"].items():
             logging.info("{}:{}".format(param_key, param_value))
 
     def test_mock_read_function(self, proteingroups_df):

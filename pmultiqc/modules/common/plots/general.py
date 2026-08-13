@@ -1,0 +1,507 @@
+from multiqc.plots import heatmap, table, bargraph
+from pmultiqc.modules.core.section_groups import add_sub_section
+from multiqc.types import SampleGroup, SampleName
+from multiqc.plots.table_object import InputRow
+from multiqc import config
+from typing import Dict, List
+import re
+import pandas as pd
+import numpy as np
+
+from pmultiqc.modules.common.common_utils import (
+    read_openms_design,
+    condition_split
+)
+
+
+FLAT_THRESHOLD = 100000
+
+def plot_html_check(plot_html):
+
+    if plot_html is None:
+        return None
+
+    checked_html = remove_subtitle(plot_html)
+    checked_html = apply_hoverinfo_config(checked_html)
+
+    return checked_html
+
+
+def plot_data_check(
+    plot_data,
+    plot_html,
+    log_text,
+    function_name
+):
+
+    from collections.abc import Mapping
+    from pmultiqc.modules.common.logging import get_logger
+
+    log = get_logger(log_text)
+
+    def count_elements(plot_data):
+
+        count = 0
+        if isinstance(plot_data, list):
+            for item in plot_data:
+                count += count_elements(item)
+
+        elif isinstance(plot_data, Mapping):
+            for v in plot_data.values():
+                count += count_elements(v)
+
+        else:
+            count += 1
+
+        return count
+
+    data_counts = count_elements(plot_data)
+
+    log.info(f"{function_name}: Plot data count: {data_counts}")
+
+    if data_counts >= FLAT_THRESHOLD:
+        plot_html.flat = True
+        log.warning(
+            f"{function_name}: Number of plotting data points: {data_counts}, exceeds threshold {FLAT_THRESHOLD}, switching to flat plot"
+        )
+
+    return plot_html
+
+
+def remove_subtitle(plot_html):
+    for dataset in plot_html.datasets:
+        if "subtitle" in dataset.dconfig:
+            dataset.dconfig["subtitle"] = ""
+        if dataset.layout and "title" in dataset.layout:
+            title_text = dataset.layout["title"].get("text", "")
+            if "<br><sup>" in title_text:
+                dataset.layout["title"]["text"] = title_text.split("<br><sup>")[0]
+    return plot_html
+
+
+def apply_hoverinfo_config(plot_html):
+
+    if config.kwargs.get("disable_hoverinfo", False):
+        for dataset in plot_html.datasets:
+
+            dataset.trace_params["hoverinfo"] = "skip"
+
+            if "hovertemplate" in dataset.trace_params:
+                dataset.trace_params["hovertemplate"] = ""
+
+    return plot_html
+
+
+def draw_heatmap(
+    sub_sections,
+    hm_colors,
+    heatmap_data,
+    heatmap_xnames,
+    heatmap_ynames,
+    report_type
+):
+    pconfig = {
+        "id": "heatmap",
+        "title": "HeatMap",
+        "min": 0,
+        "max": 1,
+        "xlab": "Metrics",
+        "ylab": "RawName",
+        "zlab": "Score",
+        "tt_decimals": 4,
+        "square": False,
+        "colstops": hm_colors,
+        "cluster_rows": False,
+        "cluster_cols": False,
+        "save_data_file": False,
+    }
+    if report_type == "maxquant":
+        hm_html = heatmap.plot(data=heatmap_data, pconfig=pconfig)
+        description_text = "This heatmap provides an overview of the performance of MaxQuant."
+    elif report_type == "fragpipe":
+        hm_html = heatmap.plot(data=heatmap_data, pconfig=pconfig)
+        description_text = "This heatmap provides an overview of the performance of FragPipe."
+    else:
+        hm_html = heatmap.plot(heatmap_data, heatmap_xnames, heatmap_ynames, pconfig)
+        description_text = "This heatmap provides an overview of the performance of quantms."
+
+    hm_html = plot_html_check(hm_html)
+
+    add_sub_section(
+        sub_section=sub_sections,
+        plot=hm_html,
+        order=2,
+        description=description_text,
+        helptext="""
+            This plot shows the pipeline performance overview.
+        """,
+    )
+
+
+def draw_exp_design(sub_sections, exp_design):
+    # Currently this only supports the OpenMS two-table format (default in quantms pipeline)
+    sample_df, file_df = read_openms_design(exp_design)
+
+    return draw_exp_design_tables(sub_sections, sample_df, file_df)
+
+
+def draw_exp_design_tables(sub_sections, sample_df, file_df):
+    """Render the Experimental Design table from already-parsed design tables.
+
+    Split out of draw_exp_design so callers that derive the design from somewhere
+    other than an OpenMS design file (e.g. quantms.io parquet) can reuse it.
+    """
+    exp_design_runs = file_df["Run"].unique().tolist()
+
+    is_bruker = False
+    if not file_df.empty:
+        first_path = str(file_df["Filename"].iloc[0])
+        is_bruker = first_path.endswith((".d", ".d.tar"))
+
+    pattern = r'^(\w+=[^=;]+)(;\w+=[^=;]+)*$'
+    is_multi_conditions = all(sample_df["Condition"].apply(lambda x: bool(re.match(pattern, str(x)))))
+
+    rows_by_group: Dict[SampleGroup, List[InputRow]] = {}
+
+    if is_multi_conditions:
+        for sample in sorted(
+            sample_df["Sample"].tolist(),
+            key=lambda x: (str(x).isdigit(), int(x) if str(x).isdigit() else str(x).lower()),
+        ):
+            file_df_sample = file_df[file_df["Sample"] == sample].copy()
+            sample_df_slice = sample_df[sample_df["Sample"] == sample].copy()
+            row_data: List[InputRow] = []
+
+            sample_data = {}
+            for k, v in condition_split(sample_df_slice["Condition"].iloc[0]).items():
+                sample_data["Condition_" + str(k)] = v
+            sample_data["BioReplicate"] = int(sample_df_slice["BioReplicate"].iloc[0])
+            sample_data["FractionGroup"] = ""
+            sample_data["Fraction"] = ""
+            sample_data["Label"] = ""
+
+            row_data.append(
+                InputRow(
+                    sample=SampleName(f"Sample {str(sample)}"),
+                    data=sample_data,
+                )
+            )
+
+            for row in file_df_sample.itertuples():
+                sample_data = {}
+                for k, _ in condition_split(sample_df_slice["Condition"].iloc[0]).items():
+                    sample_data["Condition_" + str(k)] = ""
+                sample_data["BioReplicate"] = ""
+                sample_data["FractionGroup"] = row.FractionGroup
+                sample_data["Fraction"] = row.Fraction
+                sample_data["Label"] = row.Label
+
+                row_data.append(
+                    InputRow(
+                        sample=SampleName(row.Run),
+                        data=sample_data,
+                    )
+                )
+            group_name: SampleGroup = SampleGroup(sample)
+            rows_by_group[group_name] = row_data
+        headers = {"Sample": {
+            "title": "Sample [Spectra File]",
+            "description": "",
+            "scale": False,
+        }}
+        # Use first row of sample_df for condition keys (safer than relying on loop variable)
+        first_condition = sample_df["Condition"].iloc[0] if not sample_df.empty else ""
+        for k, _ in condition_split(first_condition).items():
+            headers["Condition_" + str(k)] = {
+                "title": "Condition: " + str(k),
+                "description": "",
+                "scale": False,
+            }
+        headers["BioReplicate"] = {
+            "title": "BioReplicate",
+            "description": "",
+            "scale": False,
+        }
+        headers["FractionGroup"] = {
+            "title": "Fraction Group",
+            "description": "",
+            "scale": False,
+        }
+        headers["Fraction"] = {
+            "title": "Fraction",
+            "description": "Fraction Identifier",
+            "scale": False,
+        }
+        headers["Label"] = {
+            "title": "Label",
+            "description": "",
+            "scale": False,
+        }
+    else:
+        for sample in sorted(
+            sample_df["Sample"].tolist(),
+            key=lambda x: (str(x).isdigit(), int(x) if str(x).isdigit() else str(x).lower()),
+        ):
+            file_df_sample = file_df[file_df["Sample"] == sample].copy()
+            sample_df_slice = sample_df[sample_df["Sample"] == sample].copy()
+
+            row_data: List[InputRow] = []
+            row_data.append(
+                InputRow(
+                    sample=SampleName(f"Sample {str(sample)}"),
+                    data={
+                        "Condition": sample_df_slice["Condition"].iloc[0],
+                        "BioReplicate": int(sample_df_slice["BioReplicate"].iloc[0]),
+                        "FractionGroup": "",
+                        "Fraction": "",
+                        "Label": "",
+                    },
+                )
+            )
+            for row in file_df_sample.itertuples():
+                row_data.append(
+                    InputRow(
+                        sample=SampleName(row.Run),
+                        data={
+                            "Condition": "",
+                            "BioReplicate": "",
+                            "FractionGroup": row.FractionGroup,
+                            "Fraction": row.Fraction,
+                            "Label": row.Label,
+                        },
+                    )
+                )
+            group_name: SampleGroup = SampleGroup(sample)
+            rows_by_group[group_name] = row_data
+
+        headers = {
+            "Sample": {
+                "title": "Sample [Spectra File]",
+                "description": "",
+                "scale": False,
+            },
+            "Condition": {
+                "title": "Condition",
+                "description": "Condition",
+                "scale": False,
+            },
+            "BioReplicate": {
+                "title": "BioReplicate",
+                "description": "BioReplicate",
+                "scale": False,
+            },
+            "FractionGroup": {
+                "title": "Fraction Group",
+                "description": "Fraction Group",
+                "scale": False,
+            },
+            "Fraction": {
+                "title": "Fraction",
+                "description": "Fraction Identifier",
+                "scale": False,
+            },
+            "Label": {
+                "title": "Label",
+                "description": "Label",
+                "scale": False,
+            },
+        }
+
+    pconfig = {
+        "id": "experimental_design",
+        "title": "Experimental Design",
+        "save_file": False,
+        "raw_data_fn": "multiqc_Experimental_Design_table",
+        "no_violin": True,
+        "save_data_file": False,
+    }
+
+    table_html = table.plot(rows_by_group, headers, pconfig)
+    add_sub_section(
+        sub_section=sub_sections,
+        plot=table_html,
+        order=1,
+        description="""
+            This table shows the design of the experiment. I.e., which files and channels correspond to which sample/condition/fraction.
+            """,
+        helptext="""
+            You can see details about it in
+            https://abibuilder.informatik.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/classOpenMS_1_1ExperimentalDesign.html
+            """
+    )
+
+    return sample_df, file_df, exp_design_runs, is_bruker, is_multi_conditions
+
+
+def stat_pep_intensity(intensities: pd.Series):
+
+    stat_result = np.log2(intensities[intensities >= 1])
+
+    return stat_result.tolist()
+
+
+def search_engine_score_bins(
+    bins_start: int,
+    bins_end: int,
+    bins_step: int,
+    df: pd.DataFrame,
+    groupby_col: str,
+    score_col: str
+):
+
+    bins = list(range(bins_start, bins_end + 1, bins_step)) + [float("inf")]
+    labels = [
+        f"{i} ~ {i + bins_step}" for i in range(bins_start, bins_end, bins_step)
+    ] + [
+        f"{bins_end} ~ inf"
+    ]
+
+    plot_data = []
+    data_labels = []
+    for name, group in df.groupby(groupby_col):
+
+        group = group.copy()
+        group["score_bin"] = pd.cut(group[score_col], bins=bins, labels=labels, right=False)
+        score_dist = group["score_bin"].value_counts().sort_index().reset_index()
+
+        plot_data.append(
+            {k: {"count": v} for k, v in zip(score_dist["score_bin"], score_dist["count"], strict=True)}
+        )
+        data_labels.append(name)
+
+    result = {
+        "plot_data": plot_data,
+        "data_labels": data_labels,
+    }
+
+    return result
+
+
+# Search Engine Scores
+def draw_search_engine_scores(sub_section, plot_data, plot_type):
+
+    if plot_type == "maxquant":
+        plot_config = {
+            "id": "summary_of_andromeda_scores",
+            "title": "Summary of Andromeda Scores",
+            "helptext": """
+                This statistic is extracted from msms.txt. Andromeda score for the best associated MS/MS spectrum.
+                """,
+        }
+    elif plot_type == "fragpipe":
+        plot_config = {
+            "id": "summary_of_hyperscore",
+            "title": "Summary of Hyperscore",
+            "helptext": """
+                This statistic is extracted from psm.tsv.<br>
+                [Hyperscore] Similarity score between observed and theoretical spectra, higher values indicate greater similarity.
+                """,
+        }
+    else:
+        raise ValueError("[draw_search_engine_scores] Please check the plot type.")
+
+    pconfig = {
+        "id": plot_config["id"],
+        "cpswitch": False,
+        "title": plot_config["title"],
+        "ylab": "Counts",
+        "tt_suffix": "",
+        "tt_decimals": 0,
+        "data_labels": plot_data["data_labels"],
+        "save_data_file": False,
+    }
+
+    bar_html = bargraph.plot(data=plot_data["plot_data"], pconfig=pconfig)
+
+    bar_html = plot_html_check(bar_html)
+
+    add_sub_section(
+        sub_section=sub_section,
+        plot=bar_html,
+        order=1,
+        description="",
+        helptext=plot_config["helptext"],
+    )
+
+
+def summarise_box_data(plot_data, whisker_iqr=1.5, max_points=None):
+    """Replace raw per-sample value lists with the box statistics MultiQC can plot.
+
+    MultiQC switches a plot to a flat static image once it exceeds FLAT_THRESHOLD data
+    points, and a flat image does not stretch to the panel width -- the peptide
+    intensity box carried ~450,000 values and rendered at roughly half width because of
+    it. Its box plot also accepts pre-computed statistics: when a sample maps to a dict
+    rather than a list, it is used directly.
+
+    Summarising to {min, q1, median, q3, max, mean} keeps the plot interactive (a few
+    dozen numbers instead of hundreds of thousands), so it fills the panel, and removes
+    any need to discard data for display. Fences follow the usual Tukey convention, so
+    the whiskers show the data range excluding outliers rather than the absolute
+    extremes -- which is what a box plot conventionally depicts anyway.
+
+    Only applied when the raw point count would actually trip the threshold: below it
+    the raw values are returned untouched, so smaller reports keep showing individual
+    outlier points as before.
+
+    Returns a structure of the same shape (list of dicts, or a single dict).
+    """
+    if not plot_data:
+        return plot_data
+
+    was_list = isinstance(plot_data, list)
+    datasets = plot_data if was_list else [plot_data]
+
+    # Only summarise when the raw data would otherwise trip the flat-image fallback.
+    # Below that, keep the raw values so the plot still shows individual outlier points.
+    limit = FLAT_THRESHOLD if max_points is None else max_points
+    total = 0
+    for dataset in datasets:
+        if not isinstance(dataset, dict):
+            continue
+        for series in dataset.values():
+            if isinstance(series, dict) or series is None:
+                continue
+            try:
+                total += len(series)
+            except TypeError:
+                continue
+    if total < limit:
+        return plot_data
+
+    summarised = []
+    for dataset in datasets:
+        if not isinstance(dataset, dict):
+            summarised.append(dataset)
+            continue
+
+        out = {}
+        for sample, series in dataset.items():
+            if isinstance(series, dict):
+                out[sample] = series  # already statistics
+                continue
+            try:
+                array = np.asarray([v for v in series if v is not None], dtype=float)
+            except (TypeError, ValueError):
+                out[sample] = series
+                continue
+
+            array = array[np.isfinite(array)]
+            if array.size == 0:
+                continue
+
+            q1, median, q3 = (float(v) for v in np.percentile(array, [25, 50, 75]))
+            iqr = q3 - q1
+            low_fence = float(array[array >= q1 - whisker_iqr * iqr].min()) if iqr > 0 else float(array.min())
+            high_fence = float(array[array <= q3 + whisker_iqr * iqr].max()) if iqr > 0 else float(array.max())
+
+            out[sample] = {
+                "min": low_fence,
+                "q1": q1,
+                "median": median,
+                "q3": q3,
+                "max": high_fence,
+                "mean": float(array.mean()),
+            }
+        summarised.append(out)
+
+    return summarised if was_list else summarised[0]
